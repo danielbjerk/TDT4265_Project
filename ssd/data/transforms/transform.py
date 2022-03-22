@@ -162,7 +162,7 @@ class RandomSampleCrop(torch.nn.Module):
 
 class RandomHorizontalFlip(torch.nn.Module):
 
-    def __init__(self, p=0.5) -> None:
+    def __init__(self, p=0.1) -> None:
         super().__init__()
         self.p = p
 
