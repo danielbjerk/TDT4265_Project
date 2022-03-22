@@ -3,7 +3,7 @@ import torchvision
 from torch.optim.lr_scheduler import MultiStepLR, LinearLR
 from ssd.modeling import SSD300, SSDMultiboxLoss, backbones, AnchorBoxes
 from tops.config import LazyCall as L
-from ssd.data.tdt4265 import TDT4265_Dataset
+from ssd.data.mnist import MNISTDetectionDataset
 from ssd import utils
 from ssd.data.transforms import Normalize, ToTensor, GroundTruthBoxesToAnchors
 from .utils import get_dataset_dir, get_output_dir
@@ -30,30 +30,30 @@ anchors = L(AnchorBoxes)(
     # aspect ratio is used to define two boxes per element in the list.
     # if ratio=[2], boxes will be created with ratio 1:2 and 2:1
     # Number of boxes per location is in total 2 + 2 per aspect ratio
-    aspect_ratios=[[2], [2, 3], [2, 3], [2, 3], [2], [2]],
+    aspect_ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2], [2]],
     image_shape="${train.imshape}",
     scale_center_variance=0.1,
     scale_size_variance=0.2
 )
 
-backbone = L(backbones.BasicModel)(
-    output_channels=[128, 256, 128, 128, 64, 64],
+backbone = L(backbones.DogeModel)(
+    output_channels=[512, 1024, 512, 512, 256, 256],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
 )
 
-loss_objective = L(SSDMultiboxLoss)(anchors="${anchors}")
+loss_objective = L(SSDMultiboxLoss)(anchors=anchors)
 
 model = L(SSD300)(
-    feature_extractor="${backbone}",
-    anchors="${anchors}",
-    loss_objective="${loss_objective}",
-    num_classes=10 + 1  # Add 1 for background
+    feature_extractor=backbone,
+    anchors=anchors,
+    loss_objective=loss_objective,
+    num_classes=8 + 1  # Add 1 for background
 )
 
-optimizer = L(torch.optim.SGD)(
+optimizer = L(torch.optim.Adam)(
     # Tip: Scale the learning rate by batch size! 2.6e-3 is set for a batch size of 32. use 2*2.6e-3 if you use 64
-    lr=5e-3, momentum=0.9, weight_decay=0.0005
+    lr=2.6e-3, weight_decay=0.0005
 )
 schedulers = dict(
     linear=L(LinearLR)(start_factor=0.1, end_factor=1, total_iters=500),
@@ -62,7 +62,7 @@ schedulers = dict(
 
 
 data_train = dict(
-    dataset=L(TDT4265_Dataset)(
+    dataset=L(MNISTDetectionDataset)(
         data_dir=get_dataset_dir("mnist_object_detection/train"),
         is_train=True,
         transform=L(torchvision.transforms.Compose)(transforms=[
@@ -81,7 +81,7 @@ data_train = dict(
     ])
 )
 data_val = dict(
-    dataset=L(TDT4265_Dataset)(
+    dataset=L(MNISTDetectionDataset)(
         data_dir=get_dataset_dir("mnist_object_detection/val"),
         is_train=False,
         transform=L(torchvision.transforms.Compose)(transforms=[

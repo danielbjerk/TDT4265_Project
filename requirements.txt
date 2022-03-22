@@ -11,3 +11,4 @@ easydict
 omegaconf
 vizer
 torch 
+click

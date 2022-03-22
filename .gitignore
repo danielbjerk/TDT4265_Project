@@ -15,4 +15,4 @@ data/VOCdevkit
 notebooks/data
 datasets/tdt4265/
 dataset_exploration/annotation_images/
-data/
+/data/
