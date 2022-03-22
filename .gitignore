@@ -1,11 +1,3 @@
-# Images / Videos
-*.png
-*.jpg
-*.jpeg
-*.m4a
-*.mkv
-*.mp4
-
 # Directories
 .cache/
 logs/
@@ -21,4 +13,6 @@ data/original_mnist
 outputs/
 data/VOCdevkit
 notebooks/data
-data/tdt4265_2022
+datasets/tdt4265/
+dataset_exploration/annotation_images/
+data/
