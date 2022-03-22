@@ -7,10 +7,6 @@ from ssd.data.transforms import (
     GroundTruthBoxesToAnchors, RandomSampleCrop, RandomHorizontalFlip)
 from .doge import train, anchors, optimizer, schedulers, backbone, model, data_train, data_val, loss_objective
 from .utils import get_dataset_dir
-from torchvision.models import models 
-
-resnet = models.resnet18(pretrained=True)
-
 # Keep the model, except change the backbone and number of classes
 train.imshape = (128, 1024)
 train.image_channels = 3
