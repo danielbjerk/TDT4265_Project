@@ -12,3 +12,4 @@ omegaconf
 vizer
 torch 
 click
+cloudpickle

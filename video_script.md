@@ -12,4 +12,10 @@
 * Ting som er nærme kameraet vil jo bli forvrengt, slik man ser når bilene passerer på venstre side. I et øyeblikk blir de forvrengt til en større størrelse enn de egentlig er.
 * Ta med eksempelet hvor alle bysyklene ikke er med. 
 
-## 
+## Part 2
+### Task 2.4
+Momenter til spesialisering av modellen:
+* Forventer mange store (biler) og små (mennesker) features, men få imellom. Kan 
+* Biler er avlange i vannrett retning
+* Mennesker er avlange i horisontal retning
+* 

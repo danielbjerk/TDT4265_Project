@@ -3,6 +3,16 @@ import torch
 import math
 import torch.nn.functional as F
 
+def focal_loss(loss, labels, neg_pos_ratio):
+
+    pt = loss.data.exp()
+
+    gamma = 0.1
+    at = 0.1
+
+    return -at * (1 - pt) ** gamma * loss
+
+
 def hard_negative_mining(loss, labels, neg_pos_ratio):
     """
     It used to suppress the presence of a large number of negative prediction.
