@@ -28,6 +28,7 @@ class DogeModelFPN(nn.Module):
         self.output_feature_shape = output_feature_sizes
         
         self.backbone = torchvision.models.resnet18(pretrained=True)
+        #self.additional_downsample = nn.MaxPool2d(kernel_size=2, stride=2)
         self.pyramid = torchvision.ops.FeaturePyramidNetwork(in_channels_list=output_channels_bottom_up, out_channels=image_channels)
         
     def forward(self, x):
@@ -43,7 +44,6 @@ class DogeModelFPN(nn.Module):
         where out_features[0] should have the shape:
             shape(-1, output_channels[0], 38, 38),
         """
-
         out_features = []
 
         x0 = self.backbone.conv1(x)
@@ -56,8 +56,15 @@ class DogeModelFPN(nn.Module):
         x3 = self.backbone.layer3(x2)
         x4 = self.backbone.layer4(x3)
 
-        out_features = [x0, x1, x2, x3, x4]
+        # Burde ha en downsample til??
+        #x5 = self.additional_downsample(x4)
 
+        out_features = [x0, x1, x2, x3, x4]
+        return out_features
+
+        # Vi forventer samme out-channel på alle fra fpn, bare sett det til et tall og fortell ssd at det er å forvente.
+
+        """        
         ligma_feet = {}
         ligma_feet["feet0"] = x0
         ligma_feet["feet1"] = x1
@@ -79,3 +86,4 @@ class DogeModelFPN(nn.Module):
 
         out_features.reverse()
         return out_features
+        """
