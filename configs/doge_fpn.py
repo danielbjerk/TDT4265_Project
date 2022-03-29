@@ -41,8 +41,8 @@ anchors = L(AnchorBoxes)(
 
 backbone = L(backbones.DogeModelFPN)(
     output_channels_bottom_up = [64, 64, 128, 256, 512],
-    output_channels = [64, 64, 128, 256, 512],
-    # output_channels = [3, 3, 3, 3, 3],
+    #output_channels = [64, 64, 128, 256, 512],
+    output_channels = [128, 128, 128, 128, 128],
     image_channels="${train.image_channels}",
     output_feature_sizes="${anchors.feature_sizes}"
 )
@@ -58,7 +58,7 @@ model = L(SSD300)(
 
 optimizer = L(torch.optim.Adam)(
     # Tip: Scale the learning rate by batch size! 2.6e-3 is set for a batch size of 32. use 2*2.6e-3 if you use 64
-    lr=0.05, weight_decay=0.0005
+    lr=2.6e-3, weight_decay=0.0005
 )
 
 schedulers = dict(
@@ -67,6 +67,7 @@ schedulers = dict(
 )
 
 train_cpu_transform = L(torchvision.transforms.Compose)(transforms=[
+    # TODO: Add back
     #L(RandomSampleCrop)(),
     #L(RandomHorizontalFlip)(),
     L(ToTensor)(),

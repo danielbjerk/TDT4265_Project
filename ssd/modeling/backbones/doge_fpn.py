@@ -29,7 +29,8 @@ class DogeModelFPN(nn.Module):
         
         self.backbone = torchvision.models.resnet18(pretrained=True)
         #self.additional_downsample = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.pyramid = torchvision.ops.FeaturePyramidNetwork(in_channels_list=output_channels_bottom_up, out_channels=image_channels)
+        self.pyramid = torchvision.ops.FeaturePyramidNetwork(in_channels_list=output_channels_bottom_up, 
+                                                            out_channels=128)
         
     def forward(self, x):
         """
@@ -59,12 +60,11 @@ class DogeModelFPN(nn.Module):
         # Burde ha en downsample til??
         #x5 = self.additional_downsample(x4)
 
-        out_features = [x0, x1, x2, x3, x4]
-        return out_features
+        #out_features = [x0, x1, x2, x3, x4]
+        #return out_features
 
         # Vi forventer samme out-channel på alle fra fpn, bare sett det til et tall og fortell ssd at det er å forvente.
-
-        """        
+        
         ligma_feet = {}
         ligma_feet["feet0"] = x0
         ligma_feet["feet1"] = x1
@@ -75,6 +75,7 @@ class DogeModelFPN(nn.Module):
         
         out_features = [ligma["feet0"], ligma["feet1"], ligma["feet2"], ligma["feet3"], ligma["feet4"]]
         
+        """
         for idx, feature in enumerate(out_features):
             out_channel = self.out_channels[idx]
             h, w = self.output_feature_shape[idx]
@@ -83,7 +84,6 @@ class DogeModelFPN(nn.Module):
                 f"Expected shape: {expected_shape}, got: {feature.shape[1:]} at output IDX: {idx}"
         assert len(out_features) == len(self.output_feature_shape),\
             f"Expected that the length of the outputted features to be: {len(self.output_feature_shape)}, but it was: {len(out_features)}"
-
-        out_features.reverse()
-        return out_features
         """
+
+        return out_features
