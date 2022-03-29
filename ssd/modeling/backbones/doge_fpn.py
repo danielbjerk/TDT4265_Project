@@ -27,7 +27,7 @@ class DogeModelFPN(nn.Module):
         self.out_channels = output_channels
         self.output_feature_shape = output_feature_sizes
         
-        self.backbone = torchvision.models.resnet18(pretrained=True)
+        self.backbone = torchvision.models.resnet34(pretrained=True)
         #self.additional_downsample = nn.MaxPool2d(kernel_size=2, stride=2)
         self.pyramid = torchvision.ops.FeaturePyramidNetwork(in_channels_list=output_channels_bottom_up, 
                                                             out_channels=128)
@@ -45,8 +45,8 @@ class DogeModelFPN(nn.Module):
         where out_features[0] should have the shape:
             shape(-1, output_channels[0], 38, 38),
         """
-        out_features = []
 
+        out_features = []
         x0 = self.backbone.conv1(x)
         x0 = self.backbone.bn1(x0)
         x0 = self.backbone.relu(x0)
@@ -75,7 +75,7 @@ class DogeModelFPN(nn.Module):
         
         out_features = [ligma["feet0"], ligma["feet1"], ligma["feet2"], ligma["feet3"], ligma["feet4"]]
         
-        """
+        
         for idx, feature in enumerate(out_features):
             out_channel = self.out_channels[idx]
             h, w = self.output_feature_shape[idx]
@@ -84,6 +84,7 @@ class DogeModelFPN(nn.Module):
                 f"Expected shape: {expected_shape}, got: {feature.shape[1:]} at output IDX: {idx}"
         assert len(out_features) == len(self.output_feature_shape),\
             f"Expected that the length of the outputted features to be: {len(self.output_feature_shape)}, but it was: {len(out_features)}"
-        """
+        
 
         return out_features
+        
