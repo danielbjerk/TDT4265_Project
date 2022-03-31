@@ -18,27 +18,26 @@ from ssd.modeling import AnchorBoxes
 from ssd.modeling.backbones import resnet
 from tops.config import LazyCall as L
 
-img = torch.zeros(1, 3, 128, 1024)
-
+# Testing:  
+# img = torch.zeros(1, 3, 128, 1024)
+# 
 # import torchvision
 # model = torchvision.models.resnet34(pretrained=True)
 # 
-# x0 = self.backbone.conv1(x)
-# x0 = self.backbone.bn1(x0)
-# x0 = self.backbone.relu(x0)
+# x0 = img.conv1(x)
+# x0 = img.bn1(x0)
+# x0 = img.relu(x0)
 # 
-# x1 = self.backbone.maxpool(x0)
+# x1 = img.maxpool(x0)
 # 
-# x2 = self.backbone.layer1(x1)
-# x3 = self.backbone.layer2(x2)
-# x4 = self.backbone.layer3(x3)
-# x5 = self.backbone.layer4(x5)
+# x2 = img.layer1(x1)
+# x3 = img.layer2(x2)
+# x4 = img.layer3(x3)
+# x5 = img.layer4(x4)
 # 
 # print(x0.shape, x1.shape, x2.shape, x3.shape, x4.shape)
 # 
 # exit()
-
-
 
 
 anchors = L(AnchorBoxes)(
