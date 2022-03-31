@@ -1,13 +1,57 @@
-# Inherit configs from the default ssd300
-import torchvision
-from ssd.data import TDT4265Dataset
+import torch
+from .task_2_2 import (
+    train,
+    backbone,
+    anchors,
+    loss_objective,
+    model,
+    optimizer,
+    schedulers,
+    train_cpu_transform,
+    val_cpu_transform,
+    data_train,
+    data_val,
+    label_map
+)
+
+from ssd.modeling import AnchorBoxes
+from ssd.modeling.backbones import resnet
 from tops.config import LazyCall as L
-from ssd.data.transforms import (
-    ToTensor, Normalize, Resize,
-    GroundTruthBoxesToAnchors, RandomSampleCrop, RandomHorizontalFlip)
 
-from .doge_fpn import train, anchors, optimizer, schedulers, backbone, model, data_train, data_val, loss_objective
-from .utils import get_dataset_dir
+img = torch.zeros(1, 3, 128, 1024)
 
-# Keep the model, except change the backbone and number of classes
-label_map = {idx: cls_name for idx, cls_name in enumerate(TDT4265Dataset.class_names)}
+# import torchvision
+# model = torchvision.models.resnet34(pretrained=True)
+# 
+# x0 = self.backbone.conv1(x)
+# x0 = self.backbone.bn1(x0)
+# x0 = self.backbone.relu(x0)
+# 
+# x1 = self.backbone.maxpool(x0)
+# 
+# x2 = self.backbone.layer1(x1)
+# x3 = self.backbone.layer2(x2)
+# x4 = self.backbone.layer3(x3)
+# x5 = self.backbone.layer4(x5)
+# 
+# print(x0.shape, x1.shape, x2.shape, x3.shape, x4.shape)
+# 
+# exit()
+
+
+
+
+anchors = L(AnchorBoxes)(
+    feature_sizes=[[32, 256], [16, 128], [8, 64], [4, 32], [2, 16], [1, 8]],
+    strides=[[4, 4], [8, 8], [16, 16], [32, 32], [64, 64], [128, 128]],
+    min_sizes=[[16, 16], [32, 32], [48, 48], [64, 64], [86, 86], [128, 128], [128, 400]],
+    aspect_ratios=[[2], [2, 3], [2, 3], [2, 3], [2], [2]],
+    image_shape="${train.imshape}",
+    scale_center_variance=0.1,
+    scale_size_variance=0.2
+)
+
+model.feature_extractor = L(resnet.ResNet)(
+    out_channels = [64, 64, 128, 256, 512],
+    resnet_type = "resnet34"
+)
