@@ -4,15 +4,11 @@ import math
 import torch.nn.functional as F
 
 
-def focal_loss(loss, labels, neg_pos_ratio):
+def focal_loss(alphas, loss, gamma):
 
-    pt = loss.data.exp()
-
-    gamma = 0.1
-    at = 0.1
-
-    return -at * (1 - pt) ** gamma * loss
-
+    pt = loss.data.log()
+    # How do get in one-hot encoded?
+    return - alphas * ((1 - pt) ** gamma) * loss
 
 
 class FocalLoss(nn.Module):
@@ -26,8 +22,11 @@ class FocalLoss(nn.Module):
         self.anchors = nn.Parameter(anchors(order="xywh").transpose(0, 1).unsqueeze(dim = 0),
             requires_grad=False)
 
+        # Declared in config
         self.alphas = alphas
-
+        
+        # Maybe input this variable through config as well?
+        self.gamma = 2
 
     def _loc_vec(self, loc):
         """
@@ -48,11 +47,10 @@ class FocalLoss(nn.Module):
             gt_label = [batch_size, num_anchors]
         """
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
-        with torch.no_grad():
-            to_log = - F.log_softmax(confs, dim=1)[:, 0]
-            mask = hard_negative_mining(to_log, gt_labels, 3.0)
-        classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")
-        classification_loss = classification_loss[mask].sum()
+        
+        
+        to_log = - F.log_softmax(confs, dim=1)[:, 0]
+        classification_loss = focal_loss(self.alphas, to_log)
 
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)
         bbox_delta = bbox_delta[pos_mask]
