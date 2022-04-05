@@ -30,7 +30,7 @@ class FocalLoss(nn.Module):
         gxy = self.scale_xy*(loc[:, :2, :] - self.anchors[:, :2, :])/self.anchors[:, 2:, ]
         gwh = self.scale_wh*(loc[:, 2:, :]/self.anchors[:, 2:, :]).log()
         return torch.cat((gxy, gwh), dim=1).contiguous()
-        # return torch.dog((gxy, gwh), dim=1).contiguous()
+        # return torch.doggo((gxy, gwh), dim=1).contiguous()
 
     def focal_loss(self, confs, gt_labels):
         y = F.one_hot(gt_labels, num_classes=self.num_classes).T
