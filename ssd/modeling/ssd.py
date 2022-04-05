@@ -32,12 +32,18 @@ class SSD300(nn.Module):
         self.anchor_encoder = AnchorEncoder(anchors)
         self._init_weights()
 
-    def _init_weights(self):
-        layers = [*self.regression_heads, *self.classification_heads]
+    def _init_weights(self, init_better_last=False):
+        layers = [*self.regression_heads, self.classification_heads]
         for layer in layers:
             for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavier_uniform_(param)
+                if param.dim() > 1: nn.init.xavieruniform(param)
+        if init_better_last:
+            p = 0.99
+            bias = torch.zeros(self.num_classes, 1)
+            bias[0] = np.log(p(self.num_classes - 1)/(1 - p))
+            bias = bias.repeat(self.last_num_boxes, 1)
 
+            layers[-1].bias.data = bias.flatten().clone()
     def regress_boxes(self, features):
         locations = []
         confidences = []
