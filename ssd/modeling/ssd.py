@@ -9,7 +9,8 @@ class SSD300(nn.Module):
             feature_extractor: nn.Module,
             anchors,
             loss_objective,
-            num_classes: int):
+            num_classes: int,
+            init_better_last = True):
         super().__init__()
         """
             Implements the SSD network.
@@ -22,10 +23,15 @@ class SSD300(nn.Module):
         self.regression_heads = []
         self.classification_heads = []
 
+        num_boxes = 0
+
         # Initialize output heads that are applied to each feature map from the backbone.
         for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
             self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
             self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
+            num_boxes = n_boxes
+
+        self.last_num_boxes = num_boxes
 
         self.regression_heads = nn.ModuleList(self.regression_heads)
         self.classification_heads = nn.ModuleList(self.classification_heads)

@@ -4,16 +4,9 @@ import math
 import torch.nn.functional as F
 
 
-def focal_loss(alphas, loss, gamma):
-
-    pt = loss.data.log()
-    # How do get in one-hot encoded?
-    return - alphas * ((1 - pt) ** gamma) * loss
-
 
 class FocalLoss(nn.Module):
-
-    def __init__(self, anchors, alphas):
+    def __init__(self, anchors, alphas, gamma, num_classes):
         super().__init__()
         self.scale_xy = 1.0/anchors.scale_xy
         self.scale_wh = 1.0/anchors.scale_wh
@@ -26,7 +19,9 @@ class FocalLoss(nn.Module):
         self.alphas = alphas
         
         # Maybe input this variable through config as well?
-        self.gamma = 2
+        self.gamma = gamma
+
+        self.num_classes = num_classes
 
     def _loc_vec(self, loc):
         """
@@ -35,6 +30,15 @@ class FocalLoss(nn.Module):
         gxy = self.scale_xy*(loc[:, :2, :] - self.anchors[:, :2, :])/self.anchors[:, 2:, ]
         gwh = self.scale_wh*(loc[:, 2:, :]/self.anchors[:, 2:, :]).log()
         return torch.cat((gxy, gwh), dim=1).contiguous()
+        # return torch.dog((gxy, gwh), dim=1).contiguous()
+
+    def focal_loss(self, confs, gt_labels):
+        y = F.one_hot(gt_labels, num_classes=self.num_classes).T
+
+        alphas = torch.tensor(self.alphas).repeat(confs.shape[1], 1)
+        
+        return -alphas * torch.pow((torch.ones_like(confs) - confs), self.gamma) * y * torch.log(confs)
+
     
     def forward(self,
             bbox_delta: torch.FloatTensor, confs: torch.FloatTensor,
@@ -48,9 +52,17 @@ class FocalLoss(nn.Module):
         """
         gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
         
+        # Hvordan det var før
+        # gt_bbox = gt_bbox.transpose(1, 2).contiguous() # reshape to [batch_size, 4, num_anchors]
+        # with torch.no_grad():
+        #     to_log = - F.log_softmax(confs, dim=1)[:, 0]
+        #     mask = hard_negative_mining(to_log, gt_labels, 3.0)
+        # classification_loss = F.cross_entropy(confs, gt_labels, reduction="none")
+        # classification_loss = classification_loss[mask].sum()
+
         
         to_log = - F.log_softmax(confs, dim=1)[:, 0]
-        classification_loss = focal_loss(self.alphas, to_log)
+        classification_loss = self.focal_loss(to_log, gt_labels)
 
         pos_mask = (gt_labels > 0).unsqueeze(1).repeat(1, 4, 1)
         bbox_delta = bbox_delta[pos_mask]
@@ -65,3 +77,4 @@ class FocalLoss(nn.Module):
             total_loss=total_loss
         )
         return total_loss, to_log
+
