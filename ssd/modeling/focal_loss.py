@@ -35,9 +35,10 @@ class FocalLoss(nn.Module):
     def focal_loss(self, confs, gt_labels):
         y = F.one_hot(gt_labels, num_classes=self.num_classes).T
 
-        alphas = torch.tensor(self.alphas).repeat(confs.shape[1], 1)
-        
-        return -alphas * torch.pow((torch.ones_like(confs) - confs), self.gamma) * y * torch.log(confs)
+        alphas = torch.tensor(self.alphas).repeat(confs.shape[1], 1).cuda()
+        pow = torch.pow((torch.ones_like(confs) - confs), self.gamma)
+
+        return -alphas.T @ pow.T * y * torch.log(confs)
 
     
     def forward(self,
