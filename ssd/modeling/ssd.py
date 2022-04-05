@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from .anchor_encoder import AnchorEncoder
 from torchvision.ops import batched_nms
-
+import numpy as np
 
 class SSD300(nn.Module):
     def __init__(self, 
@@ -36,7 +36,7 @@ class SSD300(nn.Module):
         layers = [*self.regression_heads, self.classification_heads]
         for layer in layers:
             for param in layer.parameters():
-                if param.dim() > 1: nn.init.xavieruniform(param)
+                if param.dim() > 1: nn.init.xavier_uniform_(param)
         if init_better_last:
             p = 0.99
             bias = torch.zeros(self.num_classes, 1)
