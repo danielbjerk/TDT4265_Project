@@ -5,6 +5,7 @@ logs/
 .vscode
 __pycache__
 **/.ipynb_checkpoints/**
+env/
 
 # datasets
 data/coco/

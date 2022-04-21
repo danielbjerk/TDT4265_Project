@@ -22,6 +22,6 @@ from tops.config import LazyCall as L
 loss_objective = L(FocalLoss)(
     anchors="${anchors}",
     alphas=[0.01, *[1 for _ in range(train.num_classes - 1)]],
-    gamma=0.9,
+    gamma=2,
     num_classes=train.num_classes
 )

@@ -10,6 +10,7 @@ pycocotools
 easydict
 omegaconf
 vizer
-torch 
+torch
 click
 cloudpickle
+tensorboard
