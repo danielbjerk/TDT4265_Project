@@ -36,55 +36,16 @@ class FocalLoss(nn.Module):
 
         confs_soft : torch.Tensor = F.softmax(confs, dim=1)
         confs_log_soft : torch.Tensor = F.log_softmax(confs, dim=1)
+
         y = torch.transpose(F.one_hot(gt_labels, num_classes=self.num_classes).float(),-1,-2)
-        # Focal part
 
-        alphas_all = self.alphas.repeat(confs.shape[2], 1).T
+        alphas = self.alphas.repeat(confs.shape[2], 1).T
         weight = torch.pow(1.0 - confs_soft, self.gamma)
-        #focal = - alphas_all.repeat(confs.shape[0], 1, 1) *  weight * confs_log_soft
-        focal = - alphas_all.repeat(confs.shape[0], 1, 1) *  weight * y * confs_log_soft
+        focal = - alphas.repeat(confs.shape[0], 1, 1) *  weight * y * confs_log_soft
     
-        #loss_temp = torch.einsum('bc...,bc...->b...', (y, focal))
-        
-        #Mean?
-        loss = torch.mean(focal) * confs.shape[0] * confs.shape[1] * confs.shape[2]
+        loss = torch.sum(focal)
+        # loss = torch.mean(focal) * confs.shape[0] * confs.shape[1] * confs.shape[2]
         return loss
-
-        # alphas_all = torch.tensor(self.alphas).repeat(confs.shape[2], 1).T.cuda()
-        # pow = torch.pow((torch.ones_like(confs) - confs), self.gamma)
-
-        # alphas = self.alphas
-
-        # FL = 0
-
-        # for batch in range(32):
-        #     FL_batch = 0
-
-        #     conf_batch = confs[batch]
-        #     y_batch = y[batch]
-        #     p_batch = -F.log_softmax(conf_batch, dim=0)
-
-        #     for box in range(49056):
-        #         y_box = y_batch[box]
-        #         p_box = p_batch[:, box]
-        #         pow_box = torch.pow(1 - p_box, self.gamma)
-        #         log_box = torch.log(p_box)
-        #         
-        #         FL_batch -= (alphas @ pow_box) * (y_box @ log_box)
-        
-        #     FL += FL_batch / 49056
-
-        # FL /= 32
-       #  
-       #      for k in range(9):
-       #          pow_k = pow[:, k, :]
-       #          y_k = y[:, :, k]
-       #          p_k = -F.log_softmax(confs, dim=1)[:, k, :]
-
-       #          FL += alpha * pow_k @ y_k @ torch.log(p_k)
-
-       #  return FL 
-        return FL
 
     
     def forward(self,
