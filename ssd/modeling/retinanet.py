@@ -37,7 +37,6 @@ class RetinaNet(nn.Module):
                 nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
                 nn.ReLU(),
                 nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1),
-                # nn.Sigmoid()
                 )
             )
 
@@ -52,7 +51,6 @@ class RetinaNet(nn.Module):
                 nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
                 nn.ReLU(),
                 nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1),
-                # nn.Sigmoid()
                 )
             )
 
