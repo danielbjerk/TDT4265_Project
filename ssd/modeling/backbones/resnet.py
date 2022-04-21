@@ -33,6 +33,9 @@ class ResNet(torch.nn.Module):
             )
         )
 
+        #for param in self.backbone.parameters():
+        #    param.required_grad = False 
+
     def forward(self, x):
         """ Original resnet:
         x0 = self.backbone.conv1(x)

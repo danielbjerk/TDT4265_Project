@@ -71,12 +71,23 @@ class RetinaNet(nn.Module):
 
         if init_better_last:
             p = 0.99
+
+            #for sequential in self.classification_heads:
+            #    for layer in sequential:
+            #        if isinstance(layer, nn.Conv2d):
+            #            layer.bias.data.fill_(0)
+
+            #for sequential in self.regression_heads:
+            #    for layer in sequential:
+            #        if isinstance(layer, nn.Conv2d):
+            #            layer.bias.data.fill_(0)
+
+            #self.classification_heads[-1][-1].bias.data.fill_((1 - p) / p)
+            #self.regression_heads[-1][-1].bias.data.fill_((1 - p) / p)
+          
             bias = torch.ones(self.last_num_boxes, 1) * np.log(p * (self.num_classes - 1)/(1 - p))
-            self.classification_heads[-1][-1].bias.data[:4] = bias.flatten().clone()
-
-            #bias = torch.ones(self.last_num_boxes, 1) * np.log(p * (self.num_classes - 1)/(1 - p))
-            #layers[-1].bias.data[:4] = bias.flatten().clone()
-
+            self.classification_heads[-1][-1].bias.data[:self.last_num_boxes] = bias.flatten().clone()
+            self.regression_heads[-1][-1].bias.data[:self.last_num_boxes] = bias.flatten().clone()
 
     def regress_boxes(self, features):
         locations = []
@@ -97,7 +108,9 @@ class RetinaNet(nn.Module):
         """
         if not self.training:
             return self.forward_test(img, **kwargs)
+
         features = self.feature_extractor(img)
+
         return self.regress_boxes(features)
     
     def forward_test(self,
