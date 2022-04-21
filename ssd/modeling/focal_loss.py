@@ -44,7 +44,6 @@ class FocalLoss(nn.Module):
         focal = - alphas.repeat(confs.shape[0], 1, 1) *  weight * y * confs_log_soft
     
         loss = torch.sum(focal)
-        # loss = torch.mean(focal) * confs.shape[0] * confs.shape[1] * confs.shape[2]
         return loss
 
     
