@@ -1,7 +1,7 @@
-# With FPN
+# With deeper convolutional nets for regression and classification output heads
 
-import torch
-from .task_2_3a import (
+
+from .task_2_3c import (
     train,
     backbone,
     anchors,
@@ -18,16 +18,9 @@ from .task_2_3a import (
 
 from ssd.modeling.backbones import fpn 
 from tops.config import LazyCall as L
-from ssd.modeling import SSD300
+from ssd.modeling import RetinaNet
 
-backbone = L(fpn.FPN)(
-    out_channels = [128, 128, 128, 128, 128, 128],
-    out_channels_resnet = [64, 128, 256, 512, 1024, 2048],
-    resnet_type = "resnet34",
-    out_channels_fpn = 128
-)
-
-model = L(SSD300)(
+model = L(RetinaNet)(
     feature_extractor="${backbone}",
     anchors="${anchors}",
     loss_objective="${loss_objective}",
