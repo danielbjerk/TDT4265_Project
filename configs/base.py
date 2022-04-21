@@ -79,6 +79,10 @@ data_train = dict(
         img_folder=get_dataset_dir("tdt4265_2022"),
         transform="${train_cpu_transform}",
         annotation_file=get_dataset_dir("tdt4265_2022/train_annotations.json")
+
+        # When running on cluster
+        #annotation_file=get_dataset_dir("/work/datasets/tdt4265_2022/train_annotations.json")
+
     ),
     dataloader=L(torch.utils.data.DataLoader)(
         dataset="${..dataset}", 
@@ -98,6 +102,9 @@ data_val = dict(
         img_folder=get_dataset_dir("tdt4265_2022"),
         transform="${val_cpu_transform}",
         annotation_file=get_dataset_dir("tdt4265_2022/val_annotations.json")
+
+        # When running on cluster
+        #annotation_file=get_dataset_dir("/work/datasets/tdt4265_2022/val_annotations.json")
     ),
     dataloader=L(torch.utils.data.DataLoader)(
         dataset="${..dataset}", 

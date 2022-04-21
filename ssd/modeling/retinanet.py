@@ -4,7 +4,7 @@ from .anchor_encoder import AnchorEncoder
 from torchvision.ops import batched_nms
 import numpy as np
 
-class SSD300(nn.Module):
+class RetinaNet(nn.Module):
     def __init__(self, 
             feature_extractor: nn.Module,
             anchors,
@@ -13,8 +13,8 @@ class SSD300(nn.Module):
             init_better_last = True):
         super().__init__()
         """
-            Implements the SSD network.
-            Backbone outputs a list of features, which are gressed to SSD output with regression/classification heads.
+            Implements the RetinaNet network.
+            Backbone outputs a list of features, which are gressed to RetinaNet output with regression/classification heads.
         """
 
         self.feature_extractor = feature_extractor
@@ -27,8 +27,32 @@ class SSD300(nn.Module):
 
         # Initialize output heads that are applied to each feature map from the backbone.
         for n_boxes, out_ch in zip(anchors.num_boxes_per_fmap, self.feature_extractor.out_channels):
-            self.regression_heads.append(nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1))
-            self.classification_heads.append(nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1))
+            self.classification_heads.append(nn.Sequential(
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, n_boxes * self.num_classes, kernel_size=3, padding=1),
+                )
+            )
+
+
+            self.regression_heads.append(nn.Sequential(
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, out_ch, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.Conv2d(out_ch, n_boxes * 4, kernel_size=3, padding=1),
+                )
+            )
 
             num_boxes = n_boxes
 
@@ -48,7 +72,10 @@ class SSD300(nn.Module):
         if init_better_last:
             p = 0.99
             bias = torch.ones(self.last_num_boxes, 1) * np.log(p * (self.num_classes - 1)/(1 - p))
-            layers[-1].bias.data[:4] = bias.flatten().clone()
+            self.classification_heads[-1][-1].bias.data[:4] = bias.flatten().clone()
+
+            #bias = torch.ones(self.last_num_boxes, 1) * np.log(p * (self.num_classes - 1)/(1 - p))
+            #layers[-1].bias.data[:4] = bias.flatten().clone()
 
 
     def regress_boxes(self, features):
