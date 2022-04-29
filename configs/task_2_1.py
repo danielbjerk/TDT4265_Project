@@ -12,3 +12,5 @@ from .base import (
     data_val,
     label_map
 )
+
+train.batch_size = 24
