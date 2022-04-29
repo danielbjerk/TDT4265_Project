@@ -41,6 +41,7 @@ Før endringer:
     2022-04-29 10:45:25,948 [INFO ] metrics/mAP: 0.078, metrics/mAP@0.5: 0.209, metrics/mAP@0.75: 0.033, metrics/mAP_small: 0.016, metrics/mAP_medium: 0.091, metrics/mAP_large: 0.227, metrics/average_recall@1: 0.025, metrics/average_recall@10: 0.102, metrics/average_recall@100: 0.139, metrics/average_recall@100_small: 0.065, metrics/average_recall@100_medium: 0.181, metrics/average_recall@100_large: 0.297, metrics/AP_car: 0.240, metrics/AP_bus: 0.000, metrics/AP_person: 0.072, metrics/AP_rider: 0.000, 
 Etter endringer:
 
+Kanskje ha min sizes som er store og små? Store min sizes gjorde at bussen ble funnet mye bedre og fikk ekplosiv vekst på A. 
 
 ## Part 3
 
