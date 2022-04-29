@@ -60,6 +60,9 @@ def analyze_something(dataloader, cfg):
     plt.savefig("./figures/task1-1-histogram.png")
     plt.show()
 
+    # import numpy as np
+    # print(np.array(counts) / sum(counts))
+
     plt.bar(classes, average_area.values())
     plt.xlabel("Klasse")
     plt.ylabel("Gjennomsnittlig areal")

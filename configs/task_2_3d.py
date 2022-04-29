@@ -6,7 +6,7 @@ from .task_2_3c import (
     backbone,
     anchors,
     loss_objective,
-    model,
+    model,  
     optimizer,
     schedulers,
     train_cpu_transform,
