@@ -33,12 +33,7 @@ COLORS = np.random.uniform(0, 255, size=(len(dataset_classes), 3))
 def predict(input_tensor, model, detection_threshold):
     outputs = model(input_tensor)
 
-    pred_classes = [dataset_classes[i] for i in outputs[0][1].cpu().numpy()]
-    pred_labels = outputs[0][1].cpu().numpy()
-    pred_scores = outputs[0][2].detach().cpu().numpy()
-    pred_bboxes = outputs[0][0].detach().cpu().numpy()
-
-    
+    pred_classes = [dataset_classes[i] for i in outputs[0]["labels"].cpu().numpy()]
     pred_labels = outputs[0]['labels'].cpu().numpy()
     pred_scores = outputs[0]['scores'].detach().cpu().numpy()
     pred_bboxes = outputs[0]['boxes'].detach().cpu().numpy()
