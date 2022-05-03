@@ -69,7 +69,11 @@ def visualize_model_predictions_on_image(image, img_transform, batch, model, lab
     pred_image = tops.to_cuda(batch["image"])
     transformed_image = img_transform({"image": pred_image})["image"]
 
-    boxes, categories, scores = model(transformed_image, score_threshold=score_threshold)[0]
+    result = model(transformed_image, score_threshold=score_threshold)[0]
+    boxes = result["boxes"]
+    scores = result["scores"]
+    categories = result["labels"]
+
     boxes = convert_boxes_coords_to_pixel_coords(boxes.detach().cpu(), batch["width"], batch["height"])
     categories = categories.cpu().numpy().tolist()
 

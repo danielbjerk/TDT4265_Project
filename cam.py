@@ -11,15 +11,17 @@ import warnings
 import cv2
 import numpy as np
 import torch
+import tops
 import torchvision
 from pytorch_grad_cam import AblationCAM, EigenCAM
 from pytorch_grad_cam.ablation_layer import AblationLayerFasterRCNN
 from pytorch_grad_cam.utils.model_targets import FasterRCNNBoxScoreTarget
 from pytorch_grad_cam.utils.reshape_transforms import fasterrcnn_reshape_transform
-from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.image import show_cam_on_image, scale_cam_image
 import torchvision
 from PIL import Image
 import os
+from tops.checkpointer import load_checkpoint
 
 torch.backends.cudnn.benchmark = True
 warnings.filterwarnings('ignore')
@@ -72,45 +74,52 @@ def draw_boxes(boxes, labels, classes, image):
                     lineType=cv2.LINE_AA)
     return image
 
+def renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, grayscale_cam):
+    """Normalize the CAM to be in the range [0, 1] 
+    inside every bounding boxes, and zero outside of the bounding boxes. """
+    renormalized_cam = np.zeros(grayscale_cam.shape, dtype=np.float32)
+    images = []
+    for x1, y1, x2, y2 in boxes:
+        img = renormalized_cam * 0
+        img[y1:y2, x1:x2] = scale_cam_image(grayscale_cam[y1:y2, x1:x2].copy())    
+        images.append(img)
+    
+    renormalized_cam = np.max(np.float32(images), axis = 0)
+    renormalized_cam = scale_cam_image(renormalized_cam)
+    eigencam_image_renormalized = show_cam_on_image(image_float_np, renormalized_cam, use_rgb=True)
+    image_with_bounding_boxes = draw_boxes(boxes, labels, classes, eigencam_image_renormalized)
+    return image_with_bounding_boxes
+
 @click.command()
 @click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=str))
-@click.argument("image_path", default="data/tdt4265_2022/images/train/trip007_glos_Video00000_37.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
+@click.argument("image_path", default="data/tdt4265_2022/images/val/trip007_glos_Video00003_0.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
 def train(config_path: Path, image_path: Path):
 
     logger.logger.DEFAULT_SCALAR_LEVEL = logger.logger.DEBUG
     cfg = utils.load_config(config_path)
 
-    checkpoint_dir = f"{cfg.output_dir}/checkpoints"
-    checkpoint_name = sorted([f for f in os.listdir(checkpoint_dir) if os.path.isfile(os.path.join(checkpoint_dir, f))])[-1]
-    checkpoint_path = os.path.join(checkpoint_dir, checkpoint_name)
-    
-    # Instantiate and load model from checkpoint
-    model = instantiate(cfg.model)
-    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
-    model.load_state_dict(checkpoint["model"])
+    model = tops.to_cuda(instantiate(cfg.model))
+    model.eval()
+    ckpt = load_checkpoint(cfg.output_dir.joinpath("checkpoints"), map_location=tops.get_device())
+    model.load_state_dict(ckpt["model"])
 
-    # Load image, convert to floating point and compose transform
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     image = np.array(Image.open(image_path))
     image_float_np = np.float32(image) / 255
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
     ])
 
-    input_tensor = transform(image)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    input_tensor = input_tensor.to(device)
-    
-    # Add a batch dimension:
-    input_tensor = input_tensor.unsqueeze(0)
-    model.eval().to(device)
+    image = transform(image)
+    image = tops.to_cuda(image)
+    transform = instantiate(cfg.data_val.gpu_transform)
+    image = transform({"image": image})["image"]
+
 
     # Run the model and display the detections
-    boxes, classes, labels, _ = predict(input_tensor, model, 0.5)
-    image = draw_boxes(boxes, labels, classes, image)
-
-    # Show the image:
-    Image.fromarray(image).show()
-    return
+    boxes, classes, labels, _ = predict(image, model, 0.01)
 
     target_layers = [model.feature_extractor]
     targets = [FasterRCNNBoxScoreTarget(labels=labels, bounding_boxes=boxes)]
@@ -130,17 +139,11 @@ def train(config_path: Path, image_path: Path):
                 reshape_transform=fasterrcnn_reshape_transform) #Endre transform
     """
 
-    grayscale_cam = cam(input_tensor, targets=targets)
-
-    return
+    grayscale_cam = cam(image, targets=targets)
 
     # Take the first image in the batch:
     grayscale_cam = grayscale_cam[0, :]
-
-    cam_image = show_cam_on_image(image_float_np, grayscale_cam, use_rgb=True)
-    # And lets draw the boxes again:
-    image_with_bounding_boxes = draw_boxes(boxes, labels, classes, cam_image)
-    Image.fromarray(image_with_bounding_boxes)
+    Image.fromarray(renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, grayscale_cam)).show()
 
 if __name__ == "__main__":
     train()
