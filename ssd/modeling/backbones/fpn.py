@@ -1,7 +1,7 @@
 import torch.nn as nn
 from torchvision.ops import FeaturePyramidNetwork 
 
-from typing import Tuple, List
+from typing import OrderedDict, Tuple, List
 from .resnet import ResNet
 
 
@@ -38,13 +38,13 @@ class FPN(nn.Module):
         
         fpn_output = self.pyramid.forward(fpn_input_features)
         
-        out_features = [
-            fpn_output["0"], 
-            fpn_output["1"], 
-            fpn_output["2"], 
-            fpn_output["3"], 
-            fpn_output["4"],
-            fpn_output["5"]
-        ]
+        out_features = OrderedDict([
+            ("0", fpn_output["0"]), 
+            ("1", fpn_output["1"]), 
+            ("2", fpn_output["2"]), 
+            ("3", fpn_output["3"]), 
+            ("4", fpn_output["4"]),
+            ("pool", fpn_output["5"])
+        ])
 
         return out_features

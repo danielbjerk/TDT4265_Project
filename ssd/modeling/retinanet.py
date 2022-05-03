@@ -92,7 +92,7 @@ class RetinaNet(nn.Module):
     def regress_boxes(self, features):
         locations = []
         confidences = []
-        for idx, x in enumerate(features):
+        for idx, x in zip(range(len(features)), features.values()):
             bbox_delta = self.regression_heads[idx](x).view(x.shape[0], 4, -1)
             bbox_conf = self.classification_heads[idx](x).view(x.shape[0], self.num_classes, -1)
             locations.append(bbox_delta)
@@ -133,7 +133,8 @@ class RetinaNet(nn.Module):
                 H, W = imshape
                 boxes[:, [0, 2]] *= H
                 boxes[:, [1, 3]] *= W
-            predictions.append((boxes, categories, scores))
+            predictions.append({"boxes": boxes, "labels": categories, "scores" : scores})
+
         return predictions
 
  
