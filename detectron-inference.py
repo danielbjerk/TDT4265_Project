@@ -44,18 +44,24 @@ if __name__ == '__main__':
 
 	validation_directory = "./data/tdt4265_2022_updated/images/val/"
 
+	print("\r\nRunning inference on validation set...")
 	for file in tqdm(os.listdir(validation_directory)):
 		image = cv2.imread(os.path.join(validation_directory, file))
 		outputs = predictor(image)
 		v = Visualizer(image[:, :, ::-1], MetadataCatalog.get(cfg.DATASETS.TRAIN[0]), scale=1.2)
 		v = v.draw_instance_predictions(outputs["instances"].to("cpu"))
 		cv2.imwrite("./output/images/" + file, v.get_image()[:, :, ::-1])
+	
 
 
+	print("\r\nEvaluating performance...")
 	num_images_to_test = 10
 	images = []
+
+	image_paths = os.listdir(validation_directory)
+	random.shuffle(image_paths)
 	
-	for file in random.shuffle(os.listdir(validation_directory)):
+	for file in image_paths:
 		image = cv2.imread(os.path.join(validation_directory, file))
 		images.append(image)
 
@@ -63,13 +69,13 @@ if __name__ == '__main__':
 			break
 
 	
-	num_times_to_test = 100
+	num_tests = 100
 	start_time = time.time()
 
-	for i in range(num_images_to_test):
-		_ = predictor(images[i % len(images)])
+	for i in tqdm(range(num_tests)):
+		output = predictor(images[i % len(images)])
 	
 	total_time = time.time() - start_time
 
-	print(f"FPS: {num_times_to_test / total_time}")
+	print(f"BPS: {(num_tests / total_time) }")
 		
