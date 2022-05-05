@@ -124,6 +124,7 @@ def train(config_path: Path, image_path: Path):
     target_layers = [model.feature_extractor]
     targets = [FasterRCNNBoxScoreTarget(labels=labels, bounding_boxes=boxes)]
 
+    """
     cam = AblationCAM(model,
                     target_layers, 
                     use_cuda=torch.cuda.is_available(), 
@@ -137,7 +138,6 @@ def train(config_path: Path, image_path: Path):
                 target_layers, 
                 use_cuda=torch.cuda.is_available(), 
                 reshape_transform=fasterrcnn_reshape_transform) #Endre transform
-    """
 
     grayscale_cam = cam(image, targets=targets)
 
