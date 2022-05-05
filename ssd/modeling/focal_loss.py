@@ -16,7 +16,7 @@ class FocalLoss(nn.Module):
             requires_grad=False)
 
         # Declared in config
-        self.alphas = torch.tensor(alphas)
+        self.alphas = torch.tensor(alphas).cuda()
         
         # Maybe input this variable through config as well?
         self.gamma = gamma

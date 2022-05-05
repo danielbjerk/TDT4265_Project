@@ -66,6 +66,8 @@ def train(config_path: Path, evaluate_only: bool):
     logger.logger.DEFAULT_SCALAR_LEVEL = logger.logger.DEBUG
     cfg = utils.load_config(config_path)
 
+    torch.autograd.set_detect_anomaly(True)
+
     tops.init(cfg.output_dir)
     tops.set_AMP(cfg.train.amp)
     tops.set_seed(cfg.train.seed)

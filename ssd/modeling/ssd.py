@@ -40,7 +40,7 @@ class SSD300(nn.Module):
         self._init_weights(init_better_last=init_better_last)
 
     def _init_weights(self, init_better_last=False):
-        layers = [*self.regression_heads, *self.classification_heads]
+        layers = [* self.regression_heads, *self.classification_heads]
         for layer in layers:
             for param in layer.parameters():
                 if param.dim() > 1: nn.init.xavier_uniform_(param)
@@ -54,7 +54,7 @@ class SSD300(nn.Module):
     def regress_boxes(self, features):
         locations = []
         confidences = []
-        for idx, x in enumerate(features):
+        for idx, x in zip(range(len(features)), features.values()):
             bbox_delta = self.regression_heads[idx](x).view(x.shape[0], 4, -1)
             bbox_conf = self.classification_heads[idx](x).view(x.shape[0], self.num_classes, -1)
             locations.append(bbox_delta)

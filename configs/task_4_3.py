@@ -1,5 +1,3 @@
-# With FPN
-
 import torch
 from .task_2_3a import (
     train,
@@ -21,10 +19,10 @@ from tops.config import LazyCall as L
 from ssd.modeling import SSD300
 
 backbone = L(fpn.FPN)(
-    out_channels = [128, 128, 128, 128, 128, 128],
-    out_channels_backbone = [64, 128, 256, 512, 1024, 2048],
-    backbone_type = "resnet34",
-    out_channels_fpn = 128
+    out_channels = [16, 16, 16, 16, 16, 16],
+    out_channels_backbone = [24, 40, 80, 80, 112, 160],
+    backbone_type = "mobilenet",
+    out_channels_fpn = 16 
 )
 
 model = L(SSD300)(
