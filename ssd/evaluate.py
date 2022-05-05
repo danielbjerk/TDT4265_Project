@@ -67,7 +67,10 @@ def evaluate(
                 score_threshold=0.05)
 
         for idx in range(len(predictions)):
-            boxes_ltrb, categories, scores = predictions[idx]
+            boxes_ltrb = predictions[idx]["boxes"]
+            categories = predictions[idx]["labels"]
+            scores = predictions[idx]["scores"]
+
             # ease-of-use for specific predictions
             H, W = batch["height"][idx], batch["width"][idx]
             box_ltwh = utils.bbox_ltrb_to_ltwh(boxes_ltrb)

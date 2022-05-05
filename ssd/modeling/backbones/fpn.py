@@ -1,31 +1,37 @@
+from turtle import back
 import torch.nn as nn
 from torchvision.ops import FeaturePyramidNetwork 
 
-from typing import Tuple, List
+from typing import OrderedDict, Tuple, List
+
+from ssd.modeling.backbones.mobilenet import MobileNet
 from .resnet import ResNet
 
 
 class FPN(nn.Module):
     def __init__(self,
                 out_channels: List[int],
-                out_channels_resnet: List[int],
+                out_channels_backbone: List[int],
                 out_channels_fpn: int,
-                resnet_type: str):
+                backbone_type: str):
 
         super().__init__()
 
         self.out_channels = out_channels
-        
-        self.resnet = ResNet(out_channels_resnet, resnet_type)
+
+        if backbone_type == "mobilenet":
+            self.backbone = MobileNet(out_channels_backbone)
+        else:        
+            self.backbone = ResNet(out_channels_backbone, backbone_type)
+
         self.pyramid = FeaturePyramidNetwork(
-            in_channels_list=out_channels_resnet, 
+            in_channels_list=out_channels_backbone, 
             out_channels=out_channels_fpn
         )
 
     def forward(self, x):
-    
-        (x0, x1, x2, x3, x4, x5) = self.resnet.forward(x)
-
+        
+        (x0, x1, x2, x3, x4, x5) = self.backbone.forward(x)
 
         fpn_input_features = {}
 
@@ -38,13 +44,13 @@ class FPN(nn.Module):
         
         fpn_output = self.pyramid.forward(fpn_input_features)
         
-        out_features = [
-            fpn_output["0"], 
-            fpn_output["1"], 
-            fpn_output["2"], 
-            fpn_output["3"], 
-            fpn_output["4"],
-            fpn_output["5"]
-        ]
+        out_features = OrderedDict([
+            ("0", fpn_output["0"]), 
+            ("1", fpn_output["1"]), 
+            ("2", fpn_output["2"]), 
+            ("3", fpn_output["3"]), 
+            ("4", fpn_output["4"]),
+            ("pool", fpn_output["5"])
+        ])
 
         return out_features

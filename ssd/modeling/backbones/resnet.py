@@ -13,9 +13,9 @@ class ResNet(torch.nn.Module):
         if resnet_type == "resnet34":
             self.backbone = torchvision.models.resnet34(pretrained=True)
         elif resnet_type == "resnet50":
-            self.backone = torchvision.models.resnet50(pretrained=True)
+            self.backbone = torchvision.models.resnet50(pretrained=True)
         else:
-            self.backone = torchvision.models.resnet18(pretrained=True)
+            self.backbone = torchvision.models.resnet18(pretrained=True)
         
         self.backbone.layer5 = torch.nn.Sequential(
             BasicBlock(inplanes=out_channels[-3], planes=out_channels[-2], stride = 2, downsample=nn.Sequential(
