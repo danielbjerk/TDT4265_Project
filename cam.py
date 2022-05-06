@@ -92,7 +92,7 @@ def renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, gr
 
 @click.command()
 @click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=str))
-@click.argument("image_path", default="data/tdt4265_2022/images/val/trip007_glos_Video00010_1.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
+@click.argument("image_path", default="./data/tdt4265_2022/images/val/trip007_glos_Video00010_1.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
 def train(config_path: Path, image_path: Path):
 
     logger.logger.DEFAULT_SCALAR_LEVEL = logger.logger.DEBUG

@@ -1,7 +1,6 @@
 import os
 import cv2
 
-
 validation_dir = "./data/tdt4265_2022_updated/images/val"
 validation_src_dir = "./data/tdt4265_2022_updated/images/val_src"
 video_dir = "./raw_videos/"
@@ -46,10 +45,3 @@ for vid_name in os.listdir(video_dir):
 
             merged_photo.clear()
             bundle_count += 1
-            
-           
-        # Om vi filmr med Daniels kamera :              1920*1080*3 (kanaler)
-        # Om vi filmer med Daniels kamera :             1080*1920*3
-        # Modell forventer                              128*1024*3  (kanaler)
-
-        
