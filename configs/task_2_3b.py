@@ -23,7 +23,7 @@ from ssd.modeling import SSD300
 backbone = L(fpn.FPN)(
     out_channels = [128, 128, 128, 128, 128, 128],
     out_channels_backbone = [64, 128, 256, 512, 1024, 2048],
-    backbone_type = "resnet34",
+    resnet_type = "resnet34",
     out_channels_fpn = 128
 )
 

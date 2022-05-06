@@ -16,7 +16,7 @@ from .task_2_4 import (
 from .utils import get_dataset_dir
 
 train.batch_size = 32
-train.epochs = 150
+train.epochs = 152
 data_train.dataset.img_folder = get_dataset_dir("tdt4265_2022_updated")
 data_train.dataset.annotation_file = get_dataset_dir("tdt4265_2022_updated/train_annotations.json")
 data_val.dataset.img_folder = get_dataset_dir("tdt4265_2022_updated")

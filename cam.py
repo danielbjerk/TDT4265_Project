@@ -87,12 +87,12 @@ def renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, gr
     renormalized_cam = np.max(np.float32(images), axis = 0)
     renormalized_cam = scale_cam_image(renormalized_cam)
     eigencam_image_renormalized = show_cam_on_image(image_float_np, renormalized_cam, use_rgb=True)
-    image_with_bounding_boxes = draw_boxes(boxes, labels, classes, eigencam_image_renormalized)
-    return image_with_bounding_boxes
+    # image_with_bounding_boxes = draw_boxes(boxes, labels, classes, eigencam_image_renormalized)
+    return eigencam_image_renormalized 
 
 @click.command()
 @click.argument("config_path", type=click.Path(exists=True, dir_okay=False, path_type=str))
-@click.argument("image_path", default="data/tdt4265_2022/images/val/trip007_glos_Video00003_0.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
+@click.argument("image_path", default="data/tdt4265_2022/images/val/trip007_glos_Video00010_1.png", type=click.Path(exists=True, dir_okay=False, path_type=str))
 def train(config_path: Path, image_path: Path):
 
     logger.logger.DEFAULT_SCALAR_LEVEL = logger.logger.DEBUG
@@ -103,8 +103,6 @@ def train(config_path: Path, image_path: Path):
     ckpt = load_checkpoint(cfg.output_dir.joinpath("checkpoints"), map_location=tops.get_device())
     model.load_state_dict(ckpt["model"])
 
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     image = np.array(Image.open(image_path))
     image_float_np = np.float32(image) / 255
@@ -119,31 +117,23 @@ def train(config_path: Path, image_path: Path):
 
 
     # Run the model and display the detections
-    boxes, classes, labels, _ = predict(image, model, 0.01)
+    boxes, classes, labels, _ = predict(image, model, 0.4)
 
     target_layers = [model.feature_extractor]
     targets = [FasterRCNNBoxScoreTarget(labels=labels, bounding_boxes=boxes)]
 
-    """
-    cam = AblationCAM(model,
-                    target_layers, 
-                    use_cuda=torch.cuda.is_available(), 
-                    reshape_transform=fasterrcnn_reshape_transform,
-                    ablation_layer=AblationLayerFasterRCNN(),
-                    ratio_channels_to_ablate=1.0)
-
-    """
     # or a very fast alternative:
     cam = EigenCAM(model,
                 target_layers, 
                 use_cuda=torch.cuda.is_available(), 
                 reshape_transform=fasterrcnn_reshape_transform) #Endre transform
+    cam.uses_gradients=False
 
     grayscale_cam = cam(image, targets=targets)
 
     # Take the first image in the batch:
     grayscale_cam = grayscale_cam[0, :]
-    Image.fromarray(renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, grayscale_cam)).show()
+    Image.fromarray(renormalize_cam_in_bounding_boxes(boxes, labels, classes, image_float_np, grayscale_cam)).save("outputs/cam/camimage.png")
 
 if __name__ == "__main__":
     train()

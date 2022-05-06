@@ -94,7 +94,7 @@ def create_comparison_image(batch, model, img_transform, label_map, score_thresh
 
     concatinated_image = np.concatenate([
         image,
-        image_with_annotations,
+        # image_with_annotations,
         image_with_model_predictions
     ], axis=0)
     return concatinated_image

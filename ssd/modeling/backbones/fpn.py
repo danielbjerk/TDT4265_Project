@@ -13,16 +13,12 @@ class FPN(nn.Module):
                 out_channels: List[int],
                 out_channels_backbone: List[int],
                 out_channels_fpn: int,
-                backbone_type: str):
+                resnet_type: str):
 
         super().__init__()
 
         self.out_channels = out_channels
-
-        if backbone_type == "mobilenet":
-            self.backbone = MobileNet(out_channels_backbone)
-        else:        
-            self.backbone = ResNet(out_channels_backbone, backbone_type)
+        self.resnet = ResNet(out_channels_backbone, resnet_type)
 
         self.pyramid = FeaturePyramidNetwork(
             in_channels_list=out_channels_backbone, 
@@ -31,7 +27,7 @@ class FPN(nn.Module):
 
     def forward(self, x):
         
-        (x0, x1, x2, x3, x4, x5) = self.backbone.forward(x)
+        (x0, x1, x2, x3, x4, x5) = self.resnet.forward(x)
 
         fpn_input_features = {}
 
